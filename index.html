@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avaliação inicial de sintomas e gravidade</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #e0e0e0 0%, #f0f0f0 100%); /* Tons de cinza */
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 600px; /* Ajustado para o layout da primeira versão */
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.2em;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            padding: 15px;
+            border: 1px solid #e1e5e9; /* Borda levemente cinza */
+            border-left: 5px solid #25D366; /* Detalhe verde na esquerda */
+            border-radius: 8px;
+            background-color: #f8f8f8; /* Fundo cinza claro */
+            position: relative; /* Para posicionar o erro */
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 15px; /* Ajustado para o layout da primeira versão */
+            border: 2px solid #e1e5e9; /* Ajustado para o layout da primeira versão */
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #25D366;
+            box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px; /* Ajustado para o layout da primeira versão */
+        }
+
+        .required {
+            color: #e74c3c;
+        }
+
+        .checkbox-group label,
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            font-weight: normal;
+            font-size: 1em;
+            cursor: pointer;
+        }
+
+        .checkbox-group input[type="checkbox"],
+        .radio-group input[type="radio"] {
+            width: auto;
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        .btn-whatsapp {
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 50px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-whatsapp:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(37, 211, 102, 0.3);
+        }
+
+        .btn-whatsapp:active {
+            transform: translateY(0);
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-box p {
+            color: #1976d2;
+            margin: 0;
+            font-size: 0.95em;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .required-text {
+            color: #e74c3c; /* Cor vermelha para 'todos são obrigatórios' */
+        }
+
+        /* Custom error message styling */
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.9em;
+            margin-top: 5px;
+            display: none;
+            position: absolute;
+            background: #fff;
+            border: 1px solid #e74c3c;
+            border-radius: 5px;
+            padding: 8px 12px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 10;
+            white-space: nowrap;
+            top: 100%; /* Position below the label/input */
+            left: 0;
+            transform: translateY(5px); /* Small offset */
+        }
+
+        .error-message::before {
+            content: '';
+            position: absolute;
+            bottom: 100%;
+            left: 15px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: transparent transparent #e74c3c transparent;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 25px;
+                margin: 10px;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .btn-whatsapp {
+                padding: 15px 30px;
+                font-size: 1.1em;
+            }
+            .error-message {
+                left: 5px;
+                right: 5px;
+                white-space: normal;
+            }
+            .error-message::before {
+                left: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Avaliação inicial de sintomas e gravidade</h1>
+            <p>Por gentileza preencha os campos abaixo (<span class="required-text">todos são obrigatórios</span>).</p>
+        </div>
+
+        <div class="info-box" id="submissionMessage" style="display:none;">
+            <p>Seu formulário já foi enviado. Obrigado!</p>
+        </div>
+
+        <form id="avaliacaoForm" novalidate> <!-- novalidate para desabilitar validação nativa do navegador -->
+
+            <div class="form-group">
+                <label for="indicacao-group-label">Você veio por indicação de alguém? <span class="required">*</span></label>
+                <div class="radio-group">
+                    <label><input type="radio" name="indicacao" value="Sim"> Sim</label>
+                    <label><input type="radio" name="indicacao" value="Não"> Não</label>
+                </div>
+                <div id="indicacao-quem-container" class="hidden">
+                    <label for="indicacao_quem">De quem? <span class="required">*</span></label>
+                    <input type="text" id="indicacao_quem" name="indicacao_quem">
+                </div>
+                <div class="error-message" id="indicacao-error">Por favor preencha esse campo</div>
+            </div>
+
+            <div class="form-group">
+                <label for="sintomas-group-label">Quais os sintomas que você está apresentando? <span class="required">*</span></label>
+                <div class="checkbox-group" id="sintomas-group">
+                    <label><input type="checkbox" name="sintomas" value="Depressivos - Tristeza, desânimo, etc."> Depressivos - Tristeza, desânimo, etc.</label>
+                    <label><input type="checkbox" name="sintomas" value="Ansiosos"> Ansiosos</label>
+                    <label><input type="checkbox" name="sintomas" value="Pânico"> Pânico</label>
+                    <label><input type="checkbox" name="sintomas" value="Insônia"> Insônia</label>
+                    <label><input type="checkbox" name="sintomas" value="Dificuldade de concentração"> Dificuldade de concentração</label>
+                    <label><input type="checkbox" name="sintomas" value="Quero apenas me conhecer melhor e/ou lidar com pontos de estresse em minha vida."> Quero apenas me conhecer melhor e/ou lidar com pontos de estresse em minha vida.</label>
+                    <label><input type="checkbox" name="sintomas" value="Suspeita de TDAH"> Suspeita de TDAH</label>
+                    <label><input type="checkbox" name="sintomas" value="Outros"> Outros: <input type="text" name="sintomas_outros" placeholder="Especifique"></label>
+                </div>
+                <div class="error-message" id="sintomas-error">Por favor preencha esse campo</div>
+            </div>
+
+            <div class="form-group">
+                <label for="tempo_sintomas">Há quanto tempo você sofre com sintomas psiquiátricos? <span class="required">*</span></label>
+                <input type="text" id="tempo_sintomas" name="tempo_sintomas" required>
+                <div class="error-message" id="tempo_sintomas-error">Por favor preencha esse campo</div>
+            </div>
+
+            <div class="form-group">
+                <label for="tratamento-group-label">Você já fez/faz tratamento? <span class="required">*</span></label>
+                <div class="radio-group">
+                    <label><input type="radio" name="tratamento" value="Faço"> Faço</label>
+                    <label><input type="radio" name="tratamento" value="Já fiz"> Já fiz</label>
+                    <label><input type="radio" name="tratamento" value="Nunca fiz"> Nunca fiz</label>
+                </div>
+                <div class="error-message" id="tratamento-error">Por favor preencha esse campo</div>
+            </div>
+
+            <div class="form-group" id="transtorno-group-container">
+                <label for="transtorno-group-label">Em caso positivo, para qual transtorno psiquiátrico? <span class="required">*</span></label>
+                <div class="checkbox-group" id="transtorno-group">
+                    <label><input type="checkbox" name="transtorno" value="NENHUM"> NENHUM</label>
+                    <label><input type="checkbox" name="transtorno" value="Depressão"> Depressão</label>
+                    <label><input type="checkbox" name="transtorno" value="Ansiedade"> Ansiedade</label>
+                    <label><input type="checkbox" name="transtorno" value="Bipolaridade"> Bipolaridade</label>
+                    <label><input type="checkbox" name="transtorno" value="Pânico"> Pânico</label>
+                    <label><input type="checkbox" name="transtorno" value="TOC"> TOC</label>
+                    <label><input type="checkbox" name="transtorno" value="TDAH"> TDAH</label>
+                    <label><input type="checkbox" name="transtorno" value="Insônia"> Insônia</label>
+                    <label><input type="checkbox" name="transtorno" value="Esquizofrenia"> Esquizofrenia</label>
+                    <label><input type="checkbox" name="transtorno" value="Transtornos alimentares (bulimia, anorexia, etc)"> Transtornos alimentares (bulimia, anorexia, etc)</label>
+                </div>
+                <div class="error-message" id="transtorno-error">Por favor preencha esse campo</div>
+            </div>
+
+            <div class="form-group" id="psiquiatras-group-container">
+                <label for="psiquiatras-group-label">Com quantos psiquiatras você já consultou <span class="required">*</span></label>
+                <div class="radio-group">
+                    <label><input type="radio" name="psiquiatras" value="Nenhum"> Nenhum</label>
+                    <label><input type="radio" name="psiquiatras" value="1"> 1</label>
+                    <label><input type="radio" name="psiquiatras" value="2"> 2</label>
+                    <label><input type="radio" name="psiquiatras" value="3"> 3</label>
+                    <label><input type="radio" name="psiquiatras" value="Mais de 3"> Mais de 3</label>
+                </div>
+                <div class="error-message" id="psiquiatras-error">Por favor preencha esse campo</div>
+            </div>
+
+            <div class="form-group" id="resultado-tratamento-group-container">
+                <label for="resultado-tratamento-group-label">O tratamento que você fez/faz: <span class="required">*</span></label>
+                <div class="radio-group">
+                    <label><input type="radio" name="resultado_tratamento" value="Nunca fiz"> Nunca fiz</label>
+                    <label><input type="radio" name="resultado_tratamento" value="Deu resultado mas não está mais dando"> Deu resultado mas não está mais dando</label>
+                    <label><input type="radio" name="resultado_tratamento" value="Está dando resultado, mas insuficiente"> Está dando resultado, mas insuficiente</label>
+                    <label><input type="radio" name="resultado_tratamento" value="Nunca deu um bom resultado"> Nunca deu um bom resultado</label>
+                </div>
+                <div class="error-message" id="resultado-tratamento-error">Por favor preencha esse campo</div>
+            </div>
+
+            <div class="form-group" id="medicacoes-group-container">
+                <label for="medicacoes-group-label">Quais as medicações psiquiátricas que você faz uso atualmente: <span class="required">*</span></label>
+                <div class="radio-group">
+                    <label><input type="radio" name="medicacoes" value="Nenhuma"> Nenhuma</label>
+                    <label><input type="radio" name="medicacoes" value="Outras"> Outras: <input type="text" name="medicacoes_outras" placeholder="Especifique"></label>
+                </div>
+                <div class="error-message" id="medicacoes-error">Por favor preencha esse campo</div>
+            </div>
+
+            <div class="form-group">
+                <label for="suicidio-group-label">Você pensa em suicídio? <span class="required">*</span></label>
+                <div class="radio-group">
+                    <label><input type="radio" name="suicidio" value="Sim, com frequência e acho que poderia vir a fazer"> Sim, com frequência e acho que poderia vir a fazer</label>
+                    <label><input type="radio" name="suicidio" value="Sim, com frequência mas não faria"> Sim, com frequência mas não faria</label>
+                    <label><input type="radio" name="suicidio" value="Não penso em suicídio mas acho que seria melhor se estivesse morto / não acordasse mais"> Não penso em suicídio mas acho que seria melhor se estivesse morto / não acordasse mais</label>
+                    <label><input type="radio" name="suicidio" value="Não"> Não</label>
+                </div>
+                <div class="error-message" id="suicidio-error">Por favor preencha esse campo</div>
+            </div>
+
+            <div class="form-group">
+                <label for="tentativas-suicidio-group-label">Você já teve tentativas de suicídio? <span class="required">*</span></label>
+                <div class="radio-group">
+                    <label><input type="radio" name="tentativas_suicidio" value="Sim, uma"> Sim, uma</label>
+                    <label><input type="radio" name="tentativas_suicidio" value="Sim, mais de uma"> Sim, mais de uma</label>
+                    <label><input type="radio" name="tentativas_suicidio" value="Nunca"> Nunca</label>
+                </div>
+                <div class="error-message" id="tentativas-suicidio-error">Por favor preencha esse campo</div>
+            </div>
+
+            <div class="form-group">
+                <label for="internacao-group-label">Você já precisou de internação hospitalar psiquiátrica? <span class="required">*</span></label>
+                <div class="radio-group">
+                    <label><input type="radio" name="internacao" value="Sim, uma"> Sim, uma</label>
+                    <label><input type="radio" name="internacao" value="Sim, mais de uma"> Sim, mais de uma</label>
+                    <label><input type="radio" name="internacao" value="Nunca"> Nunca</label>
+                </div>
+                <div class="error-message" id="internacao-error">Por favor preencha esse campo</div>
+            </div>
+
+            <div class="info-box">
+                <p>💡 <strong>Como funciona:</strong> Após preencher o formulário, clique no botão "Enviar via WhatsApp" e o aplicativo WhatsApp será aberto automaticamente com a mensagem formatada e pronta para envio para nosso WhatsApp.</p>
+            </div>
+
+            <button type="submit" class="btn-whatsapp">
+                Enviar para nosso WhatsApp
+            </button>
+        </form>
+    </div>
+
+    <script>
+        const WHATSAPP_NUMBER = "5554996467748"; // Seu número do WhatsApp com código do país (ex: 5511999999999)
+        const COMPANY_NAME = "Dr. Fernando Scussel"; // Nome da sua empresa/identificação
+        const FORM_SUBMITTED_KEY = "formSubmitted";
+
+        document.addEventListener("DOMContentLoaded", function() {
+            if (localStorage.getItem(FORM_SUBMITTED_KEY)) {
+                document.getElementById("avaliacaoForm").classList.add("hidden");
+                document.getElementById("submissionMessage").style.display = "block";
+            }
+
+            const form = document.getElementById("avaliacaoForm");
+
+            // Function to show error message
+            function showError(elementId) {
+                document.getElementById(elementId).classList.add("show");
+            }
+
+            // Function to hide error message
+            function hideError(elementId) {
+                document.getElementById(elementId).classList.remove("show");
+            }
+
+            // Specific dependent groups for the 4 questions logic
+            const fourQuestionsDependentGroups = [
+                document.getElementById("transtorno-group-container"),
+                document.getElementById("psiquiatras-group-container"),
+                document.getElementById("resultado-tratamento-group-container"),
+                document.getElementById("medicacoes-group-container")
+            ];
+
+            function toggleDependentQuestions() {
+                const tratamentoValue = document.querySelector("input[name=\"tratamento\"]:checked");
+                
+                // Invert logic: hide if 'Nunca fiz' is selected
+                const shouldHideFour = tratamentoValue && tratamentoValue.value === 'Nunca fiz';
+                
+                fourQuestionsDependentGroups.forEach(group => {
+                    const inputs = group.querySelectorAll("input, textarea, select");
+                    if (shouldHideFour) {
+                        group.style.display = 'none';
+                        inputs.forEach(input => {
+                            input.removeAttribute('required');
+                            input.setAttribute('data-was-required', 'true'); // Mark as originally required
+                            input.checked = false; // Clear selection for radios/checkboxes
+                            if (input.type === 'text' || input.tagName === 'TEXTAREA') input.value = ''; // Clear text input
+                        });
+                        // Hide any visible error messages for disabled groups
+                        const errorDiv = group.querySelector('.error-message');
+                        if (errorDiv) errorDiv.classList.remove('show');
+                    } else {
+                        group.style.display = 'block';
+                        inputs.forEach(input => {
+                            if (input.getAttribute('data-was-required') === 'true') {
+                                input.setAttribute('required', 'true');
+                                input.removeAttribute('data-was-required');
+                            }
+                        });
+                    }
+                });
+            }
+
+            // Function to toggle "De quem?" field based on indicacao selection
+            function toggleIndicacaoQuem() {
+                const indicacaoValue = document.querySelector('input[name="indicacao"]:checked');
+                const indicacaoQuemContainer = document.getElementById("indicacao-quem-container");
+                const indicacaoQuemInput = document.getElementById("indicacao_quem");
+
+                if (indicacaoValue && indicacaoValue.value === 'Sim') {
+                    indicacaoQuemContainer.classList.remove('hidden');
+                    indicacaoQuemInput.setAttribute('required', 'true');
+                } else {
+                    indicacaoQuemContainer.classList.add('hidden');
+                    indicacaoQuemInput.removeAttribute('required');
+                    indicacaoQuemInput.value = ''; // Clear the field
+                    // Hide error message if visible
+                    const errorDiv = document.getElementById('indicacao-error');
+                    if (errorDiv) errorDiv.classList.remove('show');
+                }
+            }
+
+            // Add event listeners to the 'tratamento' radio buttons
+            document.querySelectorAll('input[name="tratamento"]').forEach(radio => {
+                radio.addEventListener('change', toggleDependentQuestions);
+            });
+
+            // Add event listeners to the 'indicacao' radio buttons
+            document.querySelectorAll('input[name="indicacao"]').forEach(radio => {
+                radio.addEventListener('change', toggleIndicacaoQuem);
+            });
+
+            // Initial call to set the correct state on page load
+            toggleDependentQuestions();
+            toggleIndicacaoQuem();
+
+            form.addEventListener("submit", function(e) {
+                e.preventDefault();
+                let isValid = true;
+                let firstInvalidElement = null;
+
+                // Clear all previous error messages
+                document.querySelectorAll(".error-message").forEach(el => el.classList.remove("show"));
+
+                // Validate 'indicacao' radio group
+                const indicacaoRadios = document.querySelectorAll("input[name=\"indicacao\"]");
+                const isIndicacaoChecked = Array.from(indicacaoRadios).some(radio => radio.checked);
+                if (!isIndicacaoChecked) {
+                    showError("indicacao-error");
+                    isValid = false;
+                    if (!firstInvalidElement) firstInvalidElement = document.querySelector("label[for=\"indicacao-group-label\"]");
+                } else {
+                    // If "Sim" is selected, validate "De quem?" field
+                    const indicacaoValue = document.querySelector('input[name="indicacao"]:checked');
+                    if (indicacaoValue && indicacaoValue.value === 'Sim') {
+                        const indicacaoQuemInput = document.getElementById("indicacao_quem");
+                        if (!indicacaoQuemInput.value.trim()) {
+                            showError("indicacao-error");
+                            isValid = false;
+                            if (!firstInvalidElement) firstInvalidElement = indicacaoQuemInput;
+                        }
+                    }
+                }
+
+                // Validate 'sintomas' checkbox group
+                const sintomasCheckboxes = document.querySelectorAll("#sintomas-group input[type=\"checkbox\"]");
+                const isSintomasChecked = Array.from(sintomasCheckboxes).some(checkbox => checkbox.checked);
+                if (!isSintomasChecked) {
+                    showError("sintomas-error");
+                    isValid = false;
+                    if (!firstInvalidElement) firstInvalidElement = document.querySelector("label[for=\"sintomas-group-label\"]");
+                }
+
+                // Validate 'tempo_sintomas' text input
+                const tempoSintomasInput = document.getElementById("tempo_sintomas");
+                if (tempoSintomasInput.hasAttribute('required') && !tempoSintomasInput.value.trim()) {
+                    showError("tempo_sintomas-error");
+                    isValid = false;
+                    if (!firstInvalidElement) firstInvalidElement = tempoSintomasInput;
+                }
+
+                // Validate 'tratamento' radio group
+                const tratamentoRadios = document.querySelectorAll("input[name=\"tratamento\"]");
+                const isTratamentoChecked = Array.from(tratamentoRadios).some(radio => radio.checked);
+                if (!isTratamentoChecked) {
+                    showError("tratamento-error");
+                    isValid = false;
+                    if (!firstInvalidElement) firstInvalidElement = document.querySelector("label[for=\"tratamento-group-label\"]");
+                }
+
+                // Validate dependent groups only if they are visible/required
+                fourQuestionsDependentGroups.forEach(group => {
+                    if (group.style.display !== 'none') { // Only validate if the group is visible
+                        const groupName = group.id.replace('-group-container', '');
+                        const radiosInGroup = group.querySelectorAll(`input[name="${groupName}"]`);
+                        const checkboxesInGroup = group.querySelectorAll(`input[name="${groupName}"]`);
+                        const textInputsInGroup = group.querySelectorAll(`input[name="${groupName}_outras"]`);
+
+                        if (radiosInGroup.length > 0) {
+                            const isChecked = Array.from(radiosInGroup).some(radio => radio.checked);
+                            if (!isChecked) {
+                                showError(`${groupName}-error`);
+                                isValid = false;
+                                if (!firstInvalidElement) firstInvalidElement = group.querySelector(`label[for="${groupName}-group-label"]`) || radiosInGroup[0];
+                            }
+                        } else if (checkboxesInGroup.length > 0) {
+                            const isChecked = Array.from(checkboxesInGroup).some(checkbox => checkbox.checked);
+                            if (!isChecked) {
+                                showError(`${groupName}-error`);
+                                isValid = false;
+                                if (!firstInvalidElement) firstInvalidElement = group.querySelector(`label[for="${groupName}-group-label"]`) || checkboxesInGroup[0];
+                            }
+                        }
+
+                        // Specific validation for 'Outras' text input within medicacoes
+                        if (groupName === 'medicacoes' && document.querySelector('input[name="medicacoes"][value="Outras"]').checked) {
+                            const medicacoesOutrasInput = document.querySelector('input[name="medicacoes_outras"]');
+                            if (!medicacoesOutrasInput.value.trim()) {
+                                showError("medicacoes-error");
+                                isValid = false;
+                                if (!firstInvalidElement) firstInvalidElement = medicacoesOutrasInput;
+                            }
+                        }
+                    }
+                });
+
+                // Validate 'suicidio' (always visible)
+                const suicidioRadios = document.querySelectorAll('input[name="suicidio"]');
+                const isSuicidioChecked = Array.from(suicidioRadios).some(radio => radio.checked);
+                if (!isSuicidioChecked) {
+                    showError("suicidio-error");
+                    isValid = false;
+                    if (!firstInvalidElement) firstInvalidElement = document.querySelector('label[for="suicidio-group-label"]');
+                }
+
+                // Validate 'tentativas_suicidio' (always visible)
+                const tentativasSuicidioRadios = document.querySelectorAll('input[name="tentativas_suicidio"]');
+                const isTentativasSuicidioChecked = Array.from(tentativasSuicidioRadios).some(radio => radio.checked);
+                if (!isTentativasSuicidioChecked) {
+                    showError("tentativas-suicidio-error");
+                    isValid = false;
+                    if (!firstInvalidElement) firstInvalidElement = document.querySelector('label[for="tentativas-suicidio-group-label"]');
+                }
+
+                // Validate 'internacao' (always visible)
+                const internacaoRadios = document.querySelectorAll('input[name="internacao"]');
+                const isInternacaoChecked = Array.from(internacaoRadios).some(radio => radio.checked);
+                if (!isInternacaoChecked) {
+                    showError("internacao-error");
+                    isValid = false;
+                    if (!firstInvalidElement) firstInvalidElement = document.querySelector('label[for="internacao-group-label"]');
+                }
+
+                if (!isValid) {
+                    if (firstInvalidElement) {
+                        firstInvalidElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                    return;
+                }
+
+                // If form is valid, proceed with submission
+                if (localStorage.getItem(FORM_SUBMITTED_KEY)) {
+                    alert("Este formulário já foi enviado por você.");
+                    return;
+                }
+
+                const formData = new FormData(this);
+                let message = `📝 *Avaliação Inicial de Sintomas - ${COMPANY_NAME}*\n\n`;
+                message += `📅 *Data/Hora:* ${new Date().toLocaleString("pt-BR")}\n\n`;
+
+                // Indicação
+                const indicacao = formData.get("indicacao");
+                if (indicacao) {
+                    message += `*Veio por indicação:* ${indicacao}`;
+                    if (indicacao === "Sim") {
+                        const indicacaoQuem = formData.get("indicacao_quem");
+                        if (indicacaoQuem) {
+                            message += ` - ${indicacaoQuem}`;
+                        }
+                    }
+                    message += `\n\n`;
+                }
+
+                // Sintomas
+                const sintomas = [];
+                formData.getAll("sintomas").forEach(s => {
+                    if (s.includes("Outros")) {
+                        const outrosSintomas = formData.get("sintomas_outros");
+                        if (outrosSintomas) sintomas.push(`Outros: ${outrosSintomas}`);
+                    } else {
+                        sintomas.push(s);
+                    }
+                });
+                if (sintomas.length > 0) {
+                    message += `*Sintomas apresentados:*\n- ${sintomas.join("\n- ")}\n\n`;
+                }
+
+                // Tempo com sintomas
+                const tempoSintomasValue = formData.get("tempo_sintomas");
+                if (tempoSintomasValue) {
+                    message += `*Tempo com sintomas psiquiátricos:* ${tempoSintomasValue}\n\n`;
+                }
+
+                // Tratamento
+                const tratamento = formData.get("tratamento");
+                if (tratamento) {
+                    message += `*Já fez/faz tratamento:* ${tratamento}\n\n`;
+                }
+
+                // Transtorno psiquiátrico (only if visible)
+                if (document.getElementById('transtorno-group-container').style.display !== 'none') {
+                    const transtornos = [];
+                    formData.getAll("transtorno").forEach(t => {
+                        transtornos.push(t);
+                    });
+                    if (transtornos.length > 0) {
+                        message += `*Transtorno psiquiátrico:*\n- ${transtornos.join("\n- ")}\n\n`;
+                    }
+                }
+
+                // Psiquiatras consultados (only if visible)
+                if (document.getElementById('psiquiatras-group-container').style.display !== 'none') {
+                    const psiquiatras = formData.get("psiquiatras");
+                    if (psiquiatras) {
+                        message += `*Psiquiatras consultados:* ${psiquiatras}\n\n`;
+                    }
+                }
+
+                // Resultado do tratamento (only if visible)
+                if (document.getElementById('resultado-tratamento-group-container').style.display !== 'none') {
+                    const resultadoTratamento = formData.get("resultado_tratamento");
+                    if (resultadoTratamento) {
+                        message += `*Resultado do tratamento:* ${resultadoTratamento}\n\n`;
+                    }
+                }
+
+                // Medicações (only if visible)
+                if (document.getElementById('medicacoes-group-container').style.display !== 'none') {
+                    const medicacoes = formData.get("medicacoes");
+                    if (medicacoes) {
+                        if (medicacoes === "Outras") {
+                            const outrasMedicacoes = formData.get("medicacoes_outras");
+                            if (outrasMedicacoes) message += `*Medicações:* Outras: ${outrasMedicacoes}\n\n`;
+                        } else {
+                            message += `*Medicações:* ${medicacoes}\n\n`;
+                        }
+                    }
+                }
+
+                // Pensamento suicida (always visible)
+                const suicidio = formData.get("suicidio");
+                if (suicidio) {
+                    message += `*Pensa em suicídio:* ${suicidio}\n\n`;
+                }
+
+                // Tentativas de suicídio (always visible)
+                const tentativasSuicidio = formData.get("tentativas_suicidio");
+                if (tentativasSuicidio) {
+                    message += `*Tentativas de suicídio:* ${tentativasSuicidio}\n\n`;
+                }
+
+                // Internação hospitalar (always visible)
+                const internacao = formData.get("internacao");
+                if (internacao) {
+                    message += `*Internação hospitalar psiquiátrica:* ${internacao}\n\n`;
+                }
+
+                message += `---\n✅ Mensagem gerada automaticamente pelo formulário`;
+
+                const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+                window.open(whatsappUrl, "_blank");
+
+                localStorage.setItem(FORM_SUBMITTED_KEY, "true");
+                document.getElementById("avaliacaoForm").classList.add("hidden");
+                document.getElementById("submissionMessage").style.display = "block";
+            });
+
+            // Event listeners to hide error messages when input changes
+            document.querySelectorAll("input, textarea, select").forEach(element => {
+                element.addEventListener("input", function() {
+                    const parentGroup = this.closest(".form-group");
+                    if (parentGroup) {
+                        const errorDiv = parentGroup.querySelector(".error-message");
+                        if (errorDiv) errorDiv.classList.remove("show");
+                    }
+                });
+                element.addEventListener("change", function() {
+                    const parentGroup = this.closest(".form-group");
+                    if (parentGroup) {
+                        const errorDiv = parentGroup.querySelector(".error-message");
+                        if (errorDiv) errorDiv.classList.remove("show");
+                    }
+                });
+            });
+
+            // Specific handling for checkbox/radio groups to hide error on change
+            document.querySelectorAll(".checkbox-group input, .radio-group input").forEach(input => {
+                input.addEventListener("change", function() {
+                    const parentGroup = this.closest(".form-group");
+                    if (parentGroup) {
+                        const errorDiv = parentGroup.querySelector(".error-message");
+                        if (errorDiv) errorDiv.classList.remove("show");
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+
