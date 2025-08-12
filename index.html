@@ -356,7 +356,7 @@
             </div>
 
             <div class="info-box">
-                <p>💡 <strong>Como funciona:</strong> Após preencher o formulário, clique no botão "Enviar via WhatsApp" e o aplicativo WhatsApp será aberto automaticamente com a mensagem formatada e pronta para envio para nosso WhatsApp.</p>
+                <p>💡 <strong>Como funciona:</strong> Após preencher o formulário, clique no botão "Enviar via WhatsApp" e o aplicativo WhatsApp será aberto automaticamente com a mensagem formatada e pronta para envio para o nosso consultório. Ao clicar enviar você autoriza o envio das informações acima, de maneira privada, para nosso consultório.</p>
             </div>
 
             <button type="submit" class="btn-whatsapp">
@@ -367,7 +367,7 @@
 
     <script>
         const WHATSAPP_NUMBER = "5554996467748"; // Seu número do WhatsApp com código do país (ex: 5511999999999)
-        const COMPANY_NAME = "Dr. Fernando Scussel"; // Nome da sua empresa/identificação
+        const COMPANY_NAME = ""; // Nome da sua empresa/identificação
         const FORM_SUBMITTED_KEY = "formSubmitted";
 
         document.addEventListener("DOMContentLoaded", function() {
@@ -591,7 +591,7 @@
                 }
 
                 const formData = new FormData(this);
-                let message = `📝 *Avaliação Inicial de Sintomas - ${COMPANY_NAME}*\n\n`;
+                let message = `📝 *Avaliação Inicial de Sintomas e Gravidade*\n\n`;
                 message += `📅 *Data/Hora:* ${new Date().toLocaleString("pt-BR")}\n\n`;
 
                 // Indicação
