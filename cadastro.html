@@ -185,6 +185,11 @@
             display: block;
         }
 
+        .readonly-field {
+            background-color: #f5f5f5;
+            color: #666;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 25px;
@@ -206,7 +211,7 @@
     <div class="container">
         <div class="header">
             <h1>Formulário de Cadastro</h1>
-            <p>Por gentileza preencha os campos abaixo (<span class="required-text">todos são obrigatórios</span>).</p>
+            <p id="headerText">Por gentileza preencha os campos abaixo (<span class="required-text">todos são obrigatórios</span>).</p>
         </div>
 
         <div class="info-box" id="submissionMessage" style="display:none;">
@@ -299,6 +304,11 @@
                 <div class="validation-popup" id="contato_emergencia-popup">Por favor preencha esse campo</div>
             </div>
 
+            <div class="form-group">
+                <label for="data_hora">Data e Hora do Preenchimento:</label>
+                <input type="text" id="data_hora" readonly class="readonly-field">
+            </div>
+
             <div class="info-box">
                 <p>💡 <strong>Como funciona:</strong> Após preencher o formulário, clique no botão "Enviar para nosso WhatsApp" e o aplicativo WhatsApp será aberto automaticamente com a mensagem formatada e pronta para envio para o nosso consultório. Ao clicar enviar você autoriza o envio das informações acima, de maneira privada, para nosso consultório.</p>
             </div>
@@ -311,18 +321,193 @@
 
     <script>
         const WHATSAPP_NUMBER = "5554996467748"; // Substitua pelo seu número de WhatsApp
-        const FORM_SUBMITTED_KEY = "formSubmittedCadastro";
 
         document.addEventListener("DOMContentLoaded", function() {
-            if (localStorage.getItem(FORM_SUBMITTED_KEY)) {
-                document.getElementById("cadastroForm").classList.add("hidden");
-                document.getElementById("submissionMessage").style.display = "block";
-            }
-
             const form = document.getElementById("cadastroForm");
 
-            function showPopup(popupId) {
-                document.getElementById(popupId).classList.add("show");
+            // Preencher data e hora atual
+            function setCurrentDateTime() {
+                const now = new Date();
+                const day = String(now.getDate()).padStart(2, '0');
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const year = now.getFullYear();
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                
+                const dateTimeString = `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+                document.getElementById('data_hora').value = dateTimeString;
+            }
+
+            setCurrentDateTime();
+
+            // Função para validar formato de data DD/MM/AAAA
+            function isValidDate(dateString) {
+                const regex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+                const match = dateString.match(regex);
+                
+                if (!match) return false;
+                
+                const day = parseInt(match[1], 10);
+                const month = parseInt(match[2], 10);
+                const year = parseInt(match[3], 10);
+                
+                if (month < 1 || month > 12) return false;
+                if (day < 1 || day > 31) return false;
+                if (year < 1900 || year > new Date().getFullYear()) return false;
+                
+                // Verificar se a data é válida
+                const date = new Date(year, month - 1, day);
+                return date.getFullYear() === year && 
+               date.getMonth() === month - 1 && 
+               date.getDate() === day;
+            }
+
+            // Função para validar CPF
+            function isValidCPF(cpf) {
+                cpf = cpf.replace(/[^\d]/g, '');
+                
+                if (cpf.length !== 11) return false;
+                
+                // Verificar se todos os dígitos são iguais
+                if (/^(\d)\1{10}$/.test(cpf)) return false;
+                
+                // Validar primeiro dígito verificador
+                let sum = 0;
+                for (let i = 0; i < 9; i++) {
+                    sum += parseInt(cpf.charAt(i)) * (10 - i);
+                }
+                let remainder = 11 - (sum % 11);
+                if (remainder === 10 || remainder === 11) remainder = 0;
+                if (remainder !== parseInt(cpf.charAt(9))) return false;
+                
+                // Validar segundo dígito verificador
+                sum = 0;
+                for (let i = 0; i < 10; i++) {
+                    sum += parseInt(cpf.charAt(i)) * (11 - i);
+                }
+                remainder = 11 - (sum % 11);
+                if (remainder === 10 || remainder === 11) remainder = 0;
+                if (remainder !== parseInt(cpf.charAt(10))) return false;
+                
+                return true;
+            }
+
+            // Função para validar formato de CEP
+            function isValidCEP(cep) {
+                const regex = /^\d{5}-?\d{3}$/;
+                return regex.test(cep);
+            }
+
+            // Função para buscar endereço pelo CEP
+            async function fetchAddressByCEP(cep) {
+                try {
+                    cep = cep.replace(/[^\d]/g, '');
+                    const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+                    const data = await response.json();
+                    
+                    if (data.erro) {
+                        return null;
+                    }
+                    
+                    return {
+                        logradouro: data.logradouro || '',
+                        bairro: data.bairro || '',
+                        localidade: data.localidade || ''
+                    };
+                } catch (error) {
+                    console.error('Erro ao buscar CEP:', error);
+                    return null;
+                }
+            }
+
+            // Formatação automática de data de nascimento
+            document.getElementById('data_nascimento').addEventListener('input', function(e) {
+                let value = e.target.value.replace(/[^\d]/g, '');
+                if (value.length === 8) {
+                    // Formato: DDMMAAAA -> DD/MM/AAAA
+                    value = value.replace(/(\d{2})(\d{2})(\d{4})/, '$1/$2/$3');
+                } else if (value.length <= 8) {
+                    // Formatação progressiva
+                    if (value.length > 2) {
+                        value = value.replace(/(\d{2})(\d{0,2})/, '$1/$2');
+                    }
+                    if (value.length > 5) {
+                        value = value.replace(/(\d{2})\/(\d{2})(\d{0,4})/, '$1/$2/$3');
+                    }
+                }
+                e.target.value = value;
+            });
+
+            // Função para validar formato de email
+            function isValidEmail(email) {
+                const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return regex.test(email);
+            }
+
+            // Formatação automática de CPF
+            document.getElementById('cpf').addEventListener('input', function(e) {
+                let value = e.target.value.replace(/[^\d]/g, '');
+                if (value.length <= 11) {
+                    value = value.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+                    e.target.value = value;
+                }
+            });
+
+            // Formatação automática de CEP
+            document.getElementById('cep').addEventListener('input', function(e) {
+                let value = e.target.value.replace(/[^\d]/g, '');
+                if (value.length <= 8) {
+                    value = value.replace(/(\d{5})(\d{3})/, '$1-$2');
+                    e.target.value = value;
+                }
+            });
+
+            // Buscar endereço quando CEP for preenchido
+            document.getElementById('cep').addEventListener('blur', async function(e) {
+                const cep = e.target.value;
+                if (cep && isValidCEP(cep)) {
+                    const address = await fetchAddressByCEP(cep);
+                    if (address) {
+                        document.getElementById('endereco').value = address.logradouro;
+                        document.getElementById('bairro').value = address.bairro;
+                        document.getElementById('cidade').value = address.localidade;
+                    }
+                } else if (cep && !isValidCEP(cep)) {
+                    showPopup('cep-popup', 'Formato inválido');
+                }
+            });
+
+            // Validação on blur para data de nascimento
+            document.getElementById('data_nascimento').addEventListener('blur', function(e) {
+                const value = e.target.value.trim();
+                if (value && !isValidDate(value)) {
+                    showPopup('data_nascimento-popup', 'Formato inválido');
+                }
+            });
+
+            // Validação on blur para CPF
+            document.getElementById('cpf').addEventListener('blur', function(e) {
+                const value = e.target.value.trim();
+                if (value && !isValidCPF(value)) {
+                    showPopup('cpf-popup', 'Formato inválido');
+                }
+            });
+
+            // Validação on blur para email
+            document.getElementById('email').addEventListener('blur', function(e) {
+                const value = e.target.value.trim();
+                if (value && !isValidEmail(value)) {
+                    showPopup('email-popup', 'Formato inválido');
+                }
+            });
+
+            function showPopup(popupId, message = null) {
+                const popup = document.getElementById(popupId);
+                if (message) {
+                    popup.textContent = message;
+                }
+                popup.classList.add("show");
             }
 
             function hidePopup(popupId) {
@@ -357,9 +542,9 @@
 
                 const fields = [
                     { id: 'nome_completo', type: 'text' },
-                    { id: 'data_nascimento', type: 'text' },
-                    { id: 'cpf', type: 'text' },
-                    { id: 'cep', type: 'text' },
+                    { id: 'data_nascimento', type: 'date' },
+                    { id: 'cpf', type: 'cpf' },
+                    { id: 'cep', type: 'cep' },
                     { id: 'endereco', type: 'text' },
                     { id: 'numero', type: 'text' },
                     { id: 'bairro', type: 'text' },
@@ -374,31 +559,70 @@
 
                 fields.forEach(field => {
                     const inputElement = document.getElementById(field.id);
-                    if (inputElement && !inputElement.value.trim()) {
-                        showPopup(field.id + '-popup');
+                    const value = inputElement.value.trim();
+                    
+                    if (!value) {
+                        showPopup(field.id + '-popup', 'Por favor preencha esse campo');
                         isValid = false;
                         if (!firstInvalidElement) firstInvalidElement = inputElement.closest('.form-group');
+                    } else {
+                        // Validações específicas
+                        if (field.type === 'date' && !isValidDate(value)) {
+                            showPopup(field.id + '-popup', 'Formato inválido');
+                            isValid = false;
+                            if (!firstInvalidElement) firstInvalidElement = inputElement.closest('.form-group');
+                        } else if (field.type === 'cpf' && !isValidCPF(value)) {
+                            showPopup(field.id + '-popup', 'Formato inválido');
+                            isValid = false;
+                            if (!firstInvalidElement) firstInvalidElement = inputElement.closest('.form-group');
+                        } else if (field.type === 'cep' && !isValidCEP(value)) {
+                            showPopup(field.id + '-popup', 'Formato inválido');
+                            isValid = false;
+                            if (!firstInvalidElement) firstInvalidElement = inputElement.closest('.form-group');
+                        } else if (field.type === 'email' && !isValidEmail(value)) {
+                            showPopup(field.id + '-popup', 'Formato inválido');
+                            isValid = false;
+                            if (!firstInvalidElement) firstInvalidElement = inputElement.closest('.form-group');
+                        }
                     }
                 });
 
                 if (isValid) {
-                    const formData = new FormData(form);
-                    let message = "Dados de Cadastro:\n\n";
+                    // Função para obter IP do usuário
+                    async function getUserIP() {
+                        try {
+                            const response = await fetch('https://api.ipify.org?format=json');
+                            const data = await response.json();
+                            return data.ip;
+                        } catch (error) {
+                            console.error('Erro ao obter IP:', error);
+                            return 'Não disponível';
+                        }
+                    }
 
-                    fields.forEach(field => {
-                        const label = document.querySelector(`label[for='${field.id}']`).textContent.replace(' *', '').replace(':', '').trim();
-                        message += `${label}: ${formData.get(field.id)}\n`;
+                    // Obter IP e enviar mensagem
+                    getUserIP().then(userIP => {
+                        const formData = new FormData(form);
+                        let message = "*Dados de Cadastro:*\n\n";
+
+                        fields.forEach(field => {
+                            const label = document.querySelector(`label[for='${field.id}']`).textContent.replace(' *', '').replace(':', '').trim();
+                            message += `*${label}*: ${formData.get(field.id)}\n`;
+                        });
+
+                        // Adicionar linha em branco e depois data/hora e IP no final
+                        message += `\n*Data e Hora do Preenchimento*: ${document.getElementById('data_hora').value}\n`;
+                        message += `*Endereço IP*: ${userIP}`;
+
+                        const encodedMessage = encodeURIComponent(message);
+                        const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
+
+                        window.open(whatsappUrl, '_blank');
+
+                        form.classList.add("hidden");
+                        document.getElementById("submissionMessage").style.display = "block";
+                        document.getElementById("headerText").style.display = "none";
                     });
-
-                    const encodedMessage = encodeURIComponent(message);
-                    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
-
-                    localStorage.setItem(FORM_SUBMITTED_KEY, "true");
-
-                    window.open(whatsappUrl, '_blank');
-
-                    form.classList.add("hidden");
-                    document.getElementById("submissionMessage").style.display = "block";
                 } else {
                     if (firstInvalidElement) {
                         firstInvalidElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
