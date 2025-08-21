@@ -358,7 +358,23 @@
             }
         }
 
+        // Função para formatar CPF
+        function formatarCPF(cpf) {
+            cpf = cpf.replace(/\D/g, "");
+            if (cpf.length > 11) {
+                cpf = cpf.substring(0, 11);
+            }
+            cpf = cpf.replace(/(\d{3})(\d)/, "$1.$2");
+            cpf = cpf.replace(/(\d{3})(\d)/, "$1.$2");
+            cpf = cpf.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+            return cpf;
+        }
+
         document.addEventListener("DOMContentLoaded", function() {
+            const cpfInput = document.getElementById("cpf");
+            cpfInput.addEventListener("input", function(e) {
+                e.target.value = formatarCPF(e.target.value);
+            });
             // Preencher data automaticamente com a data atual no formato brasileiro e horário completo
             const hoje = new Date();
             const dataFormatada = hoje.toLocaleDateString('pt-BR');
@@ -425,21 +441,22 @@
                 });
 
                 // Validação específica do CPF
-                const cpfInput = document.getElementById('cpf');
-                if (cpfInput && cpfInput.value.trim() && !validarCPF(cpfInput.value)) {
-                    // Rolar para o campo CPF
-                    cpfInput.closest('.form-group').scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    
-                    // Exibir mensagem de CPF inválido
-                    const cpfPopup = document.getElementById('cpf-popup');
-                    cpfPopup.innerHTML = 'CPF inválido.';
-                    showPopup('cpf-popup');
+                const cpfInput = document.getElementById("cpf");
+                const cpfPopup = document.getElementById("cpf-popup");
+
+                if (cpfInput && !cpfInput.value.trim()) {
+                    showPopup("cpf-popup");
+                    cpfPopup.innerHTML = "Por favor preencha esse campo";
                     isValid = false;
-                    if (!firstInvalidElement) firstInvalidElement = cpfInput.closest('.form-group');
-                } else if (cpfInput && cpfInput.value.trim()) {
-                    // Restaurar mensagem original se CPF for válido
-                    const cpfPopup = document.getElementById('cpf-popup');
-                    cpfPopup.innerHTML = 'Por favor preencha esse campo';
+                    if (!firstInvalidElement) firstInvalidElement = cpfInput.closest(".form-group");
+                } else if (cpfInput && cpfInput.value.trim() && !validarCPF(cpfInput.value)) {
+                    showPopup("cpf-popup");
+                    cpfPopup.innerHTML = "Número Inválido";
+                    isValid = false;
+                    if (!firstInvalidElement) firstInvalidElement = cpfInput.closest(".form-group");
+                } else if (cpfInput && cpfInput.value.trim() && validarCPF(cpfInput.value)) {
+                    hidePopup("cpf-popup");
+                    cpfPopup.innerHTML = "Por favor preencha esse campo"; // Reset to original message
                 }
 
                 if (isValid) {
