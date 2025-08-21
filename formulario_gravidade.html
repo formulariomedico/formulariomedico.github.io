@@ -257,6 +257,7 @@
                     <label><input type="checkbox" name="sintomas" value="Pânico"> Pânico</label>
                     <label><input type="checkbox" name="sintomas" value="Insônia"> Insônia</label>
                     <label><input type="checkbox" name="sintomas" value="Dificuldade de concentração"> Dificuldade de concentração</label>
+                    <label><input type="checkbox" name="sintomas" value="O motivo da consulta é porque preciso de um atestado ou laudo"> O motivo da consulta é porque preciso de um atestado ou laudo</label>
                     <label><input type="checkbox" name="sintomas" value="Quero apenas me conhecer melhor e/ou lidar com pontos de estresse em minha vida."> Quero apenas me conhecer melhor e/ou lidar com pontos de estresse em minha vida.</label>
                     <label><input type="checkbox" name="sintomas" value="Suspeita de TDAH"> Suspeita de TDAH</label>
                     <label><input type="checkbox" name="sintomas" value="Outros"> Outros: <input type="text" name="sintomas_outros" placeholder="Especifique"></label>
@@ -284,12 +285,12 @@
                 <label>Em caso positivo, para qual transtorno psiquiátrico? <span class="required">*</span></label>
                 <div class="checkbox-group">
 
-                    <label><input type="checkbox" name="transtorno" value="Depressão"> Depressão</label>
-                    <label><input type="checkbox" name="transtorno" value="Ansiedade"> Ansiedade</label>
-                    <label><input type="checkbox" name="transtorno" value="Bipolaridade"> Bipolaridade</label>
+                    <label><input type="checkbox" name="transtorno" value="Depressão (Transtorno Depressivo, Distimia)"> Depressão (Transtorno Depressivo, Distimia)</label>
+                    <label><input type="checkbox" name="transtorno" value="Ansiedade (Transtorno de Ansiedade Generalizada, etc)"> Ansiedade (Transtorno de Ansiedade Generalizada, etc)</label>
+                    <label><input type="checkbox" name="transtorno" value="Bipolaridade (Transtorno Bipolar)"> Bipolaridade (Transtorno Bipolar)</label>
                     <label><input type="checkbox" name="transtorno" value="Pânico"> Pânico</label>
-                    <label><input type="checkbox" name="transtorno" value="TOC"> TOC</label>
-                    <label><input type="checkbox" name="transtorno" value="TDAH"> TDAH</label>
+                    <label><input type="checkbox" name="transtorno" value="TOC (Transtorno Obsessivo Compulsivo)"> TOC (Transtorno Obsessivo Compulsivo)</label>
+                    <label><input type="checkbox" name="transtorno" value="TDAH (Transtorno do Déficit de Atenção e Hiperatividade)"> TDAH (Transtorno do Déficit de Atenção e Hiperatividade)</label>
                     <label><input type="checkbox" name="transtorno" value="Insônia"> Insônia</label>
                     <label><input type="checkbox" name="transtorno" value="Esquizofrenia"> Esquizofrenia</label>
                     <label><input type="checkbox" name="transtorno" value="Transtornos alimentares (bulimia, anorexia, etc)"> Transtornos alimentares (bulimia, anorexia, etc)</label>
@@ -349,7 +350,7 @@
                 </div>
                 <div id="tentativas-suicidio-quando-container" class="hidden">
                     <label for="tentativas_suicidio_quando"><u>Quando foram</u> e através de <u>qual meio</u> (uso de medicamento, enforcamento, cortes, etc) essa(s) tentativa(s)? <span class="required">*</span></label>
-                    <textarea id="tentativas_suicidio_quando" name="tentativas_suicidio_quando" rows="3"></textarea>
+                    <textarea id="tentativas_suicidio_quando" name="tentativas_suicidio_quando" rows="3" placeholder="Ex: Em 2017, uso de medicamento"></textarea>
                     <div class="validation-popup" id="tentativas-quando-popup">Por favor preencha esse campo</div>
                 </div>
                 <div class="validation-popup" id="tentativas-suicidio-popup">Por favor preencha esse campo</div>
@@ -364,7 +365,7 @@
                 </div>
                 <div id="internacao-quando-container" class="hidden">
                     <label for="internacao_quando"><u>Quando foram</u> e por <u>qual motivo</u> essa(s) internações? <span class="required">*</span></label>
-                    <textarea id="internacao_quando" name="internacao_quando" rows="3"></textarea>
+                    <textarea id="internacao_quando" name="internacao_quando" rows="3" placeholder="Ex: Em 2017, tentativa de suicidio"></textarea>
                     <div class="validation-popup" id="internacao-quando-popup">Por favor preencha esse campo</div>
                 </div>
                 <div class="validation-popup" id="internacao-popup">Por favor preencha esse campo</div>
@@ -686,20 +687,23 @@
                 if (isValid) {
                     // Processar dados do formulário
                     const formData = new FormData(form);
-                    let message = "Avaliação Inicial de Sintomas e Gravidade\n\n";
+                      let message = "*Avaliação Inicial de Sintomas e Gravidade*\n\n";;;
 
                     const indicacao = formData.get('indicacao');
                     message += `*Você veio por indicação de alguém?* ${indicacao}\n`;
                     if (indicacao === 'Sim' && formData.get('indicacao_quem')) {
-                        message += `De quem? ${formData.get('indicacao_quem')}\n`;
+                        message += `De quem? ${formData.get("indicacao_quem")}\n\n`;
                     }
 
                     message += `*Qual a sua idade?* ${formData.get("idade")}\n\n`;
-
-                    const sintomas = formData.getAll('sintomas');
+                    const sintomas = formData.getAll("sintomas");
                     message += `*Quais os sintomas que você está apresentando?*\n`;
                     sintomas.forEach(sintoma => {
-                        message += `• ${sintoma}\n`;
+                        if (sintoma === 'O motivo da consulta é porque preciso de um atestado ou laudo') {
+                                message += `###### *${sintoma}* #######\n`;
+                        } else {
+                            message += `• ${sintoma}\n`;
+                        }
                     });
                     if (formData.get('sintomas_outros')) {
                         message += `• Outros: ${formData.get('sintomas_outros')}\n`;
@@ -725,9 +729,10 @@
                         message += `*O tratamento que você fez/faz:* ${formData.get("resultado_tratamento")}\n\n`;
                         
                         const medicacoes = formData.get('medicacoes');
-                        message += `*Quais as medicações psiquiátricas que você faz uso atualmente:* ${medicacoes}`;
                         if (medicacoes === 'As seguintes' && formData.get('medicacoes_outras')) {
-                            message += ` ${formData.get('medicacoes_outras')}`;
+                            message += `*Quais as medicações psiquiátricas que você faz uso atualmente:* ${formData.get('medicacoes_outras')}`;
+                        } else {
+                            message += `*Quais as medicações psiquiátricas que você faz uso atualmente:* ${medicacoes}`;
                         }
                         message += '\n\n';
                     }
